@@ -11,7 +11,6 @@ public class PCMain {
 
     public static void main(String[] args) throws NXTCommException,
             IOException, InterruptedException {
-        
         final NXTComm nxtComm = NXTCommFactory.createNXTComm(NXTCommFactory.USB);
         NXTInfo[] nxtInfo = nxtComm.search(null);
         if (nxtInfo.length == 0){
@@ -29,19 +28,19 @@ public class PCMain {
     }
     
     private static void safeOpen(final NXTComm comm, final NXTInfo conn, String lockpath) throws NXTCommException, IOException{
-    	
-    	LockFile lock = new LockFile(lockpath);
-    	lock.create();
-    	
+        
+        //LockFile lock = new LockFile(lockpath);
+        //lock.create();
+        
         comm.open(conn);
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-        	@Override
-        	public void run() {
-        		try {
-        			comm.close();
-        		} catch (IOException e) {}
-        	}
+            @Override
+            public void run() {
+                try {
+                    comm.close();
+                } catch (IOException e) {}
+            }
         }));
-    	
+        
     }
 }

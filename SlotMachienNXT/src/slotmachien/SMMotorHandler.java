@@ -102,7 +102,6 @@ public class SMMotorHandler extends AbstractObservable {
                 if(signal != null) {
                     signal.performAction();
                     notifyObservers();
-
                     signal = null;
                 } else {
                     if (status != previousStatus && status != Status.DEADZONED) {
@@ -111,7 +110,7 @@ public class SMMotorHandler extends AbstractObservable {
                 }
 
                 previousStatus = status;
-                Delay.msDelay(500);
+                Delay.msDelay(100);
             }
             
         }
