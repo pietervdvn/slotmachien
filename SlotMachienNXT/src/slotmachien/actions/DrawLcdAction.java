@@ -7,15 +7,15 @@ public class DrawLcdAction extends Action {
 
     public static int XSIZE = 16;
     public static int YSIZE = 8;
-	
-	private SMMotorHandler smmh;
-	
-	public DrawLcdAction(SMMotorHandler smmh){
-	    this.smmh = smmh;
-	}
+    
+    private SMMotorHandler smmh;
+    
+    public DrawLcdAction(SMMotorHandler smmh){
+        this.smmh = smmh;
+    }
     
     private void drawStatus(){
-        String str = smmh.getStatus().toString();
+        String str = smmh.getDoorChangeDesc() + " " + smmh.getStatus().getAbbreviation();
         /*LCD.clear();
         LCD.drawString(
                 str, 

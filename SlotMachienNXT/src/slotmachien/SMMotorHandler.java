@@ -103,13 +103,14 @@ public class SMMotorHandler extends AbstractObservable {
                     signal.performAction();
                     notifyObservers();
                     signal = null;
+                    previousStatus = getStatus();
                 } else {
                     if (status != previousStatus && status != Status.DEADZONED) {
                         notifyObservers();
+                        previousStatus = status;
                     }
                 }
 
-                previousStatus = status;
                 Delay.msDelay(100);
             }
             
