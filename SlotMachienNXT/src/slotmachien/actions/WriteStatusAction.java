@@ -23,7 +23,11 @@ public class WriteStatusAction extends Action {
     @Override
     public void perform() {
         try {
-           conn.writeLine(smmh.getStatus().toString());
+           conn.writeLine(
+                   smmh.getDoorChangeDesc()
+                   + " " +
+                   smmh.getStatus().getAbbreviation()
+               );
         } catch (IOException e) {
             // Connection failure, this writer is obsolete and a new one should be created.
             smmh.removeObserver(this);

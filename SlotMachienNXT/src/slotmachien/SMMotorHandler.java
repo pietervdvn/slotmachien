@@ -21,8 +21,8 @@ public class SMMotorHandler extends AbstractObservable {
     
     private static final int ALLOWED_TACHO_MARGIN = 5;
     
-    
     private MotorBlock motorblock;
+    private Signal signal;
         
     public SMMotorHandler(NXTRegulatedMotor... motors) {
         this.motorblock = new MotorBlock(motors); 
@@ -67,6 +67,19 @@ public class SMMotorHandler extends AbstractObservable {
         motorblock.flt();
     }
     
+    public void sendSignal(Signal signal) {
+        this.signal = signal;
+    }
+
+    public String getDoorChangeDesc() {
+        if(signal != null) {
+            return signal.getDesc();
+        } else {
+            // m for manual
+            return "m";
+        }
+    }
+
     // check door status
     public Status getStatus() {
         if (motorblock.getTachoCount() < OPEN_LIMIT_BEFORE_DEADZONE) {
@@ -85,10 +98,19 @@ public class SMMotorHandler extends AbstractObservable {
         public void run() {
             while(true) {
                 Status status = getStatus();
-                if (status != previousStatus && status != Status.DEADZONED) {
-                    previousStatus = status;
+
+                if(signal != null) {
+                    signal.performAction();
                     notifyObservers();
+
+                    signal = null;
+                } else {
+                    if (status != previousStatus && status != Status.DEADZONED) {
+                        notifyObservers();
+                    }
                 }
+
+                previousStatus = status;
                 Delay.msDelay(500);
             }
             

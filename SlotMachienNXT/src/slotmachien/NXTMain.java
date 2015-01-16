@@ -8,69 +8,77 @@ import observable.ObservableButton;
 import slotmachien.actions.Action;
 import slotmachien.actions.DelayedAction;
 import slotmachien.actions.DrawLcdAction;
+import slotmachien.actions.SignalAction;
 import slotmachien.actions.TurnToAction;
 import slotmachien.actions.WriteStatusAction;
 import time.Countdown;
 
 public class NXTMain {
 
-	private static final int POSITION_OPEN = -180;
-	private static final int POSITION_CLOSED = 0;
+    private static final int POSITION_OPEN = -180;
+    private static final int POSITION_CLOSED = 0;
 
-	private Action openAction;
-	private Action closeAction;
-	private Action drawLcdAction;
-	private Action delayedCloseAction;
-	private SMMotorHandler motors;
+    private Action openAction;
+    private Action closeAction;
+    private Action drawLcdAction;
+    private Action delayedCloseAction;
+    private SMMotorHandler motors;
 
-	public static void main(String[] args) {
-		new NXTMain();
-	}
+    public static void main(String[] args) {
+        new NXTMain();
+    }
 
-	// DIT MOEST IK DOEN VAN T21
-	private NXTMain() {
-		motors = new SMMotorHandler(Motor.B, Motor.C);
+    // DIT MOEST IK DOEN VAN T21
+    private NXTMain() {
+        motors = new SMMotorHandler(Motor.B, Motor.C);
 
-		openAction = new TurnToAction(motors, POSITION_OPEN);
-		closeAction = new TurnToAction(motors, POSITION_CLOSED);
-		drawLcdAction = new DrawLcdAction(motors);
-		delayedCloseAction = new DelayedAction(10, new Countdown.Ticker() {
-			@Override
-			public void doTick(int tick) {
-				Sound.beep();
-			}
-		}, closeAction);
+        openAction = new TurnToAction(motors, POSITION_OPEN);
+        closeAction = new TurnToAction(motors, POSITION_CLOSED);
+        drawLcdAction = new DrawLcdAction(motors);
+        delayedCloseAction = new DelayedAction(10, new Countdown.Ticker() {
+            @Override
+            public void doTick(int tick) {
+                Sound.beep();
+            }
+        }, closeAction);
 
-		openAction.performOnNotification(new ObservableButton(Button.LEFT));
-		closeAction.performOnNotification(new ObservableButton(Button.RIGHT));
-		delayedCloseAction.performOnNotification(new ObservableButton(
-				Button.ENTER));
+        //bo for button open
+        SignalAction buttonOpenSignal = new SignalAction(motors,new Signal("bo", openAction));
+        //bc for button close
+        SignalAction buttonCloseSignal = new SignalAction(motors,new Signal("bc", closeAction));
+        //dc for delayed close
+        SignalAction delaySignal = new SignalAction(motors,new Signal("dc", delayedCloseAction));
 
-		drawLcdAction.performOnNotification(motors);
+        buttonOpenSignal.performOnNotification(new ObservableButton(Button.LEFT));
+        buttonCloseSignal.performOnNotification(new ObservableButton(Button.RIGHT));
+        delaySignal.performOnNotification(new ObservableButton(Button.ENTER));
 
-		new ConnectWithPC().run();
-	}
+        drawLcdAction.performOnNotification(motors);
 
-	class ConnectWithPC implements Runnable {
+        new ConnectWithPC().run();
+    }
 
-		@Override
-		public void run() {
-			UsbIO conn = UsbIO.waitForUsbIO();
-			conn.setOnBreak(this);
+    class ConnectWithPC implements Runnable {
 
-			StreamObserver streamObserver = new StreamObserver(conn);
-			Action writeStatusAction = new WriteStatusAction(motors, conn);
+        @Override
+        public void run() {
+            UsbIO conn = UsbIO.waitForUsbIO();
+            conn.setOnBreak(this);
 
-			openAction
-					.performOnNotification(streamObserver.getObserver("OPEN"));
-			closeAction.performOnNotification(streamObserver
-					.getObserver("CLOSE"));
+            StreamObserver streamObserver = new StreamObserver(conn);
+            Action writeStatusAction = new WriteStatusAction(motors, conn);
 
-			writeStatusAction.performOnNotification(motors);
+            SignalAction inputOpenAction = new SignalAction(motors, new Signal("io", openAction));
+            SignalAction inputCloseAction = new SignalAction(motors, new Signal("ic", closeAction));
 
-			// Write initial status
-			writeStatusAction.perform();
-		}
+            inputOpenAction.performOnNotification(streamObserver.getObserver("OPEN"));
+            inputCloseAction.performOnNotification(streamObserver.getObserver("CLOSE"));
 
-	}
+            writeStatusAction.performOnNotification(motors);
+
+            // Write initial status
+            writeStatusAction.perform();
+        }
+
+    }
 }

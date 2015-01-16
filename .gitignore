@@ -1,4 +1,5 @@
 *.class
+*.swp
 
 # Package Files #
 *.jar
@@ -11,3 +12,5 @@
 *.iml
 
 *.lockmachien
+
+.syntastic_javac_config
