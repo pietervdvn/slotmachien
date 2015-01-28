@@ -29,6 +29,7 @@ def status_door():
 
 @app.route('/slotmachien/slack/', methods=['POST'])
 def slack_update_door():
+    print("SLACKING!")
     before_slack_request()
     action = request.form.get('text')
     if action in supported_actions:
